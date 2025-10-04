@@ -8,5 +8,8 @@ debug.sf.auto_latch_unsignaled=1
 ro.vendor.oplus.market.enname=OnePlus Nord 4
 ro.vendor.oplus.market.name=OnePlus Nord 4
 
+# Device Settings
+ro.surface_flinger.panel_refresh_rate_node=/sys/kernel/oplus_display/test_te
+
 # USB
 vendor.usb.product_string=OnePlus Nord 4
