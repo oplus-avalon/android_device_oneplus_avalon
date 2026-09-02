@@ -14,39 +14,6 @@ $(call inherit-product, device/oneplus/avalon/device.mk)
 TARGET_DISABLE_EPPE := true
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
-# AxionAOSP Flags
-TARGET_BOOT_ANIMATION_RES := 1080
-AXION_MAINTAINER := Klaus_Mikaelson
-AXION_PROCESSOR := Snapdragon®_7+_Gen_3
-AXION_CAMERA_REAR_INFO := 50,8
-AXION_CAMERA_FRONT_INFO := 16
-TARGET_INCLUDE_AXFX := true
-TARGET_ENABLE_BLUR := true
-TARGET_INCLUDES_LOS_PREBUILTS := true
-BYPASS_CHARGE_SUPPORTED := true
-TORCH_STR_SUPPORTED := true
-TARGET_SUPPORTED_REFRESH_RATES := 60,90,120
-TARGET_DOZE_DOUBLE_TAP_PULSE_SUPPORTED := true
-TARGET_DOZE_PICKUP_PULSE_SUPPORTED := true
-PERF_GOV_SUPPORTED := true
-PERF_DEFAULT_GOV := walt
-HBM_SUPPORTED := true
-HBM_NODE := /sys/class/backlight/panel0-backlight/hbm_mode
-
-# Core tweaks
-ifeq ($(TARGET_GAPPS_VARIANT),core)
-    TARGET_INCLUDE_PARTNER_SETUP := true
-    TARGET_INCLUDE_GOOGLE_TELECOMM := false
-
-    PRODUCT_PACKAGES += \
-        Velvet \
-        WellbeingPrebuilt \
-        AndroidPlatformServices \
-        MlkitBarcodeUIPrebuilt \
-        VisionBarcodePrebuilt \
-        TfliteDynamitePrebuilt
-endif
-
 PRODUCT_NAME := lineage_avalon
 PRODUCT_DEVICE := avalon
 PRODUCT_MANUFACTURER := OnePlus
@@ -62,3 +29,25 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     DeviceProduct=CPH2661 \
     SystemDevice=OP5E93L1 \
     SystemName=CPH2661
+
+# AxionAOSP Flags
+TARGET_BOOT_ANIMATION_RES := 1080
+AXION_MAINTAINER := Klaus_Mikaelson
+AXION_PROCESSOR := Snapdragon®_7+_Gen_3
+AXION_CAMERA_REAR_INFO := 50,8
+AXION_CAMERA_FRONT_INFO := 16
+TARGET_INCLUDE_AXFX := true
+TARGET_ENABLE_BLUR := true
+TARGET_INCLUDES_LOS_PREBUILTS := true
+TORCH_STR_SUPPORTED := true
+TARGET_SUPPORTED_REFRESH_RATES := 60,90,120
+TARGET_DOZE_DOUBLE_TAP_PULSE_SUPPORTED := true
+TARGET_DOZE_PICKUP_PULSE_SUPPORTED := true
+TARGET_INCLUDE_GOOGLE_TELECOMM := false
+TARGET_INCLUDE_PARTNER_SETUP := true
+PERF_GOV_SUPPORTED := true
+PERF_DEFAULT_GOV := walt
+BYPASS_CHARGE_SUPPORTED := true
+BYPASS_CHARGE_TOGGLE_PATH := /sys/class/oplus_chg/battery/mmi_charging_enable
+HBM_SUPPORTED := true
+HBM_NODE := /sys/class/backlight/panel0-backlight/hbm_mode
