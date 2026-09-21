@@ -20,8 +20,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.UserHandle;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.util.Log;
+
+import lineageos.providers.LineageSettings;
 
 import org.lineageos.device.settings.utils.FileUtils;
 import org.lineageos.device.settings.Constants;
@@ -35,6 +36,10 @@ public abstract class SliderControllerBase {
     private Vibrator mVibrator;
 
     private int[] mActions = null;
+
+    /** Set by subclasses before returning from processAction to attach a
+     *  package name to the position feedback broadcast (app-launch mode). */
+    protected String mFeedbackPackage = null;
 
     public SliderControllerBase(Context context) {
         mContext = context;
@@ -62,9 +67,17 @@ public abstract class SliderControllerBase {
     }
 
     public static void sendUpdateBroadcast(Context context, int position, int result) {
+        sendUpdateBroadcast(context, position, result, null);
+    }
+
+    public static void sendUpdateBroadcast(Context context, int position, int result,
+            String packageName) {
         Intent intent = new Intent(Constants.ACTION_UPDATE_SLIDER_POSITION);
         intent.putExtra(Constants.EXTRA_SLIDER_POSITION, position);
         intent.putExtra(Constants.EXTRA_SLIDER_POSITION_VALUE, result);
+        if (packageName != null) {
+            intent.putExtra(Constants.EXTRA_SLIDER_PACKAGE, packageName);
+        }
         context.sendBroadcastAsUser(intent, UserHandle.CURRENT);
         intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
         Log.i(TAG, "slider change to positon " + position);
@@ -80,9 +93,10 @@ public abstract class SliderControllerBase {
 
         try {
             int state = Integer.parseInt(FileUtils.readLine(Constants.NODE_SLIDER_STATE).trim());
+            mFeedbackPackage = null;
             ret = processAction(mActions[state - 1]);
             if (ret > 0 && notify) {
-                sendUpdateBroadcast(context, state - 1, ret);
+                sendUpdateBroadcast(context, state - 1, ret, mFeedbackPackage);
             }
         } catch (Exception e) {
             Log.e(TAG, "Failed to restore slider state", e);
@@ -94,8 +108,9 @@ public abstract class SliderControllerBase {
         if (mVibrator == null) {
             return;
         }
-        boolean enabled = Settings.System.getIntForUser(mContext.getContentResolver(),
-                Settings.System.TOUCHSCREEN_GESTURE_HAPTIC_FEEDBACK, 1, UserHandle.USER_CURRENT) != 0;
+        boolean enabled = LineageSettings.System.getIntForUser(mContext.getContentResolver(),
+                LineageSettings.System.TOUCHSCREEN_GESTURE_HAPTIC_FEEDBACK, 1,
+                UserHandle.USER_CURRENT) != 0;
         if (enabled) {
             mVibrator.vibrate(50);
         }
