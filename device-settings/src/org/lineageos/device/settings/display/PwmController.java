@@ -18,6 +18,7 @@ public class PwmController {
     private static PwmController sInstance;
     private final Context mContext;
     private final SharedPreferences mSharedPrefs;
+    private String mNode;
 
     private PwmController(Context context) {
         mContext = context.getApplicationContext();
@@ -31,62 +32,116 @@ public class PwmController {
         return sInstance;
     }
 
+    /**
+     * Prefer pwm_onepulse when the panel actually implements it (Ace 3 / AA551).
+     * OP11 Samsung/BOE reject that node with EFAULT; ColorOS high-frequency PWM
+     * dimming is dimlayer_bl_en instead.
+     */
+    private String pwmNode() {
+        if (mNode != null) {
+            return mNode;
+        }
+        String pulse = FileUtils.readLineTrimmed(Constants.NODE_ONEPULSE_PWM);
+        if (pulse != null && !pulse.isEmpty()) {
+            mNode = Constants.NODE_ONEPULSE_PWM;
+        } else if (FileUtils.isFileWritable(Constants.NODE_DIMLAYER_BL)
+                || FileUtils.fileExists(Constants.NODE_DIMLAYER_BL)) {
+            mNode = Constants.NODE_DIMLAYER_BL;
+        }
+        return mNode;
+    }
+
+    public boolean isPwmSupported() {
+        String node = pwmNode();
+        return node != null && FileUtils.isFileWritable(node);
+    }
+
     public boolean isPwmEnabled() {
-        // The kernel state resets on reboot, so the node is the source of truth;
-        // the preference is only a fallback while the node is unreadable
-        String value = FileUtils.readLineTrimmed(Constants.NODE_ONEPULSE_PWM);
-        if (value != null) {
-            return "1".equals(value);
+        String node = pwmNode();
+        if (node != null) {
+            String value = FileUtils.readLineTrimmed(node);
+            if (value != null) {
+                return parseEnabled(value);
+            }
         }
         return mSharedPrefs.getBoolean(Constants.KEY_ONEPULSE_PWM, false);
     }
 
     /**
-     * Re-apply the persisted PWM choice after boot: the panel always comes up with
-     * one-pulse disabled, so a user selection would otherwise be lost on reboot.
+     * Re-apply the persisted PWM choice after boot: kernel state resets.
      */
     public void restorePwmSetting() {
         boolean wanted = mSharedPrefs.getBoolean(Constants.KEY_ONEPULSE_PWM, false);
-        if (wanted && !isPwmEnabled()) {
-            if (FileUtils.isFileWritable(Constants.NODE_ONEPULSE_PWM)) {
-                setPwm(true);
-                Log.i(TAG, "Restored PWM setting after boot");
+        if (wanted && isPwmSupported() && !isPwmEnabled()) {
+            if (setPwm(true)) {
+                Log.i(TAG, "Restored PWM setting after boot via " + pwmNode());
             } else {
-                Log.w(TAG, "PWM node is not writable, cannot restore setting");
+                Log.w(TAG, "Failed to restore PWM setting after boot");
             }
         }
     }
 
     public boolean enablePwm() {
-        if (!FileUtils.isFileWritable(Constants.NODE_ONEPULSE_PWM)) {
+        if (!isPwmSupported()) {
             Log.w(TAG, "PWM node is not writable");
             return false;
         }
 
-        // PWM has priority: disable HBM if it's active
         HbmController hbmController = HbmController.getInstance(mContext);
         if (hbmController.isHbmEnabled()) {
             Log.i(TAG, "HBM is active, disabling it (PWM has priority)");
-            hbmController.disableHbm();
+            if (!hbmController.disableHbm()) {
+                Log.w(TAG, "Failed to disable HBM before enabling PWM");
+                return false;
+            }
         }
 
-        setPwm(true);
+        PanelModeSettle.awaitIfNeeded("before PWM on");
+        if (!setPwm(true)) {
+            return false;
+        }
+        PanelModeSettle.mark();
         return true;
     }
 
     public boolean disablePwm() {
-        if (!FileUtils.isFileWritable(Constants.NODE_ONEPULSE_PWM)) {
+        if (!isPwmSupported()) {
             Log.w(TAG, "PWM node is not writable");
             return false;
         }
 
-        setPwm(false);
+        if (!setPwm(false)) {
+            return false;
+        }
+        PanelModeSettle.mark();
         return true;
     }
 
-    private void setPwm(boolean enable) {
-        FileUtils.writeLine(Constants.NODE_ONEPULSE_PWM, enable ? "1" : "0");
+    private boolean setPwm(boolean enable) {
+        String node = pwmNode();
+        if (node == null) {
+            return false;
+        }
+        String want = enable ? "1" : "0";
+        if (!FileUtils.writeLine(node, want)) {
+            Log.w(TAG, "PWM sysfs write failed (node=" + node + " enable=" + enable + ")");
+            return false;
+        }
+        String got = FileUtils.readLineTrimmed(node);
+        if (got == null || parseEnabled(got) != enable) {
+            Log.w(TAG, "PWM node mismatch after write: node=" + node
+                    + " want=" + want + " got=" + got);
+            return false;
+        }
         mSharedPrefs.edit().putBoolean(Constants.KEY_ONEPULSE_PWM, enable).commit();
-        Log.i(TAG, "PWM set to: " + enable);
+        Log.i(TAG, "PWM set to " + enable + " via " + node);
+        return true;
+    }
+
+    /** dimlayer_bl_en prints "1 0"; pwm_onepulse prints "1". */
+    private static boolean parseEnabled(String line) {
+        int space = line.indexOf(' ');
+        String first = (space < 0 ? line : line.substring(0, space)).trim();
+        return "1".equals(first);
     }
 }

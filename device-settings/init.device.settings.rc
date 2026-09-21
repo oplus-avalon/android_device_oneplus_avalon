@@ -2,8 +2,14 @@ on boot
     # Display
     chown system system /sys/kernel/oplus_display/pwm_onepulse
     chmod 0666 /sys/kernel/oplus_display/pwm_onepulse
+    chown system system /sys/kernel/oplus_display/dimlayer_bl_en
+    chmod 0666 /sys/kernel/oplus_display/dimlayer_bl_en
     chown system system /sys/kernel/oplus_display/hbm_max
     chmod 0664 /sys/kernel/oplus_display/hbm_max
+    # AOD light mode (0=50 nits high, 1=10 nits low). Also set in
+    # init.oplus.display.rc; keep here so DeviceSettings can always write it.
+    chown system system /sys/kernel/oplus_display/aod_light_mode_set
+    chmod 0666 /sys/kernel/oplus_display/aod_light_mode_set
     # Panel test-TE counter (real DDIC refresh rate); DeviceSettingsService
     # writes 1 at boot to enable the irq, GameBar FPS meter reads the rate
     chown system system /sys/kernel/oplus_display/test_te
@@ -12,3 +18,19 @@ on boot
     # RefreshRateMonitorService alongside the MIN/PEAK refresh rate settings
     chown system system /sys/kernel/oplus_display/adfr_min_fps
     chmod 0664 /sys/kernel/oplus_display/adfr_min_fps
+    # cool_down is created with 0644; sm8550-common ueventd only DAC-fixes
+    # mmi_charging_enable. Charger probe is often after `on boot`.
+    chown system system /sys/class/oplus_chg/battery/cool_down
+    chmod 0660 /sys/class/oplus_chg/battery/cool_down
+
+on charger
+    chown system system /sys/class/oplus_chg/battery/cool_down
+    chmod 0660 /sys/class/oplus_chg/battery/cool_down
+
+on property:sys.boot_completed=1
+    chown system system /sys/kernel/oplus_display/pwm_onepulse
+    chmod 0666 /sys/kernel/oplus_display/pwm_onepulse
+    chown system system /sys/kernel/oplus_display/dimlayer_bl_en
+    chmod 0666 /sys/kernel/oplus_display/dimlayer_bl_en
+    chown system system /sys/class/oplus_chg/battery/cool_down
+    chmod 0660 /sys/class/oplus_chg/battery/cool_down
