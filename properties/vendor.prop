@@ -1,3 +1,6 @@
+# ALS
+vendor.sensors.als_correction.grabrect=777 21 807 62
+
 # Bluetooth
 bluetooth.device.default_name=OnePlus Nord 4
 
