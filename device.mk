@@ -18,6 +18,13 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/audio/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
     $(LOCAL_PATH)/configs/audio/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml
 
+# Axion kernel manager
+# device/axion/common no longer ships per-platform files, and its lookup runs
+# before DEVICE_PATH/COMMON_PATH are set, so install the files explicitly.
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/ax_kernel_manager.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/ax_kernel_manager.xml \
+    $(LOCAL_PATH)/ax_init_avalon.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/ax_init_avalon.rc
+
 # Boot animation
 TARGET_SCREEN_HEIGHT := 2772
 TARGET_SCREEN_WIDTH := 1240

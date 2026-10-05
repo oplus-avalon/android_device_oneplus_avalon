@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Axion Kernel Manager config - OnePlus Nord 4 (avalon).
+
+    Installed by device.mk as /system_ext/etc/ax_kernel_manager.xml.
+
+    CPU: four cpufreq policies, one per cluster:
+      policy0 = cpu 0-1, policy2 = cpu 2-4, policy5 = cpu 5-6, policy7 = cpu 7.
+    Frequencies are read at runtime from scaling_available_frequencies.
+
+    GPU: kgsl-3d0 devfreq. There is deliberately no static "values" list,
+    the loader reads devfreq/available_frequencies.
+-->
+<kernel-manager>
+    <cpu
+        id="little"
+        group="cpu 0-1"
+        cpuIds="0-1"
+        minId="axion_min_freq"
+        maxId="axion_max_freq"
+        governorId="little_cpu_governor"
+        minNode="/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq"
+        maxNode="/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq"
+        curFreqPath="/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq"
+        availablePath="/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies"
+        governorNode="/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
+        governorAvailablePath="/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors" />
+
+    <cpu
+        id="mid"
+        group="cpu 2-4"
+        cpuIds="2-4"
+        minId="axion_min_freq_mid"
+        maxId="axion_max_freq_mid"
+        governorId="mid_cpu_governor"
+        minNode="/sys/devices/system/cpu/cpufreq/policy2/scaling_min_freq"
+        maxNode="/sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq"
+        curFreqPath="/sys/devices/system/cpu/cpufreq/policy2/scaling_cur_freq"
+        availablePath="/sys/devices/system/cpu/cpufreq/policy2/scaling_available_frequencies"
+        governorNode="/sys/devices/system/cpu/cpufreq/policy2/scaling_governor"
+        governorAvailablePath="/sys/devices/system/cpu/cpufreq/policy2/scaling_available_governors" />
+
+    <cpu
+        id="big"
+        group="cpu 5-6"
+        cpuIds="5-6"
+        minId="axion_min_freq_big"
+        maxId="axion_max_freq_big"
+        governorId="big_cpu_governor"
+        minNode="/sys/devices/system/cpu/cpufreq/policy5/scaling_min_freq"
+        maxNode="/sys/devices/system/cpu/cpufreq/policy5/scaling_max_freq"
+        curFreqPath="/sys/devices/system/cpu/cpufreq/policy5/scaling_cur_freq"
+        availablePath="/sys/devices/system/cpu/cpufreq/policy5/scaling_available_frequencies"
+        governorNode="/sys/devices/system/cpu/cpufreq/policy5/scaling_governor"
+        governorAvailablePath="/sys/devices/system/cpu/cpufreq/policy5/scaling_available_governors" />
+
+    <cpu
+        id="prime"
+        group="cpu 7"
+        cpuIds="7"
+        minId="axion_min_freq_prime"
+        maxId="axion_max_freq_prime"
+        governorId="prime_cpu_governor"
+        minNode="/sys/devices/system/cpu/cpufreq/policy7/scaling_min_freq"
+        maxNode="/sys/devices/system/cpu/cpufreq/policy7/scaling_max_freq"
+        curFreqPath="/sys/devices/system/cpu/cpufreq/policy7/scaling_cur_freq"
+        availablePath="/sys/devices/system/cpu/cpufreq/policy7/scaling_available_frequencies"
+        governorNode="/sys/devices/system/cpu/cpufreq/policy7/scaling_governor"
+        governorAvailablePath="/sys/devices/system/cpu/cpufreq/policy7/scaling_available_governors" />
+
+    <gpu
+        node="/sys/class/kgsl/kgsl-3d0/devfreq"
+        currentNode="/sys/class/kgsl/kgsl-3d0/gpuclk"
+        usageNode="/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage"
+        availablePath="/sys/class/kgsl/kgsl-3d0/devfreq/available_frequencies"
+        frequencyMultiplier="1" />
+</kernel-manager>
