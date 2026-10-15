@@ -32,6 +32,10 @@ PRODUCT_COPY_FILES += \
 # Fingerprint
 $(call soong_config_set_bool,qtidisplay,oplus_udfps,true)
 
+# OnePlus Settings
+PRODUCT_PACKAGES += \
+    OnePlusSettings
+
 # OPlus Camera
 $(call inherit-product-if-exists, vendor/oplus/camera/avalon/opluscamera.mk)
 
